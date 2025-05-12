@@ -1,30 +1,36 @@
-// src/store/cryptoStore.ts
 import { create } from 'zustand';
 import { Crypto } from '../models/Crypto';
 import { CryptoService } from '../services/CryptoService';
 
-type CryptoStore = {
-  cryptos: Crypto[];
+// Interfaz que define el estado y acciones del store
+interface CryptoStore {
+  cryptos: Crypto[];  // Lista de criptomonedas
+  cryptoSelected: Crypto | null; // Criptomoneda seleccionada
   loading: boolean;
-  error: string | null;
-  cryptoSelected: Crypto | null;
-  fetchCryptos: () => Promise<void>;
-  setCryptoSelected: (crypto: Crypto) => void;
-};
+  page: number;
+  fetchCryptos: () => Promise<void>; // Función para cargar criptomonedas
+  setCryptoSelected: (crypto: Crypto) => void; // Función para establecer la cripto seleccionada
+}
 
-export const useCryptoStore = create<CryptoStore>((set) => ({
+// Store global usando Zustand
+export const useCryptoStore = create<CryptoStore>((set, get) => ({
   cryptos: [],
-  loading: false,
-  error: null,
   cryptoSelected: null,
+  loading: false,
+  page: 0,
+
+  // Carga criptomonedas usando el servicio y actualiza el estado
   fetchCryptos: async () => {
-    set({ loading: true, error: null });
-    try {
-      const data = await CryptoService.getCryptos();
-      set({ cryptos: data, loading: false });
-    } catch (e) {
-      set({ error: 'Error al cargar criptos', loading: false });
-    }
+    const { page, cryptos } = get();
+    set({ loading: true });
+    const newCryptos = await CryptoService.getCryptos(page * 20, 20);
+    set({
+      cryptos: [...cryptos, ...newCryptos], // Agrega nuevas criptos
+      page: page + 1,
+      loading: false
+    });
   },
-  setCryptoSelected: (crypto) => set({ cryptoSelected: crypto }),
+
+  // Establece la cripto seleccionada
+  setCryptoSelected: (crypto: Crypto) => set({ cryptoSelected: crypto }),
 }));

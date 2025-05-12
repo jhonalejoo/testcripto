@@ -1,4 +1,4 @@
-// src/navigation/AppNavigator.tsx
+//Navigation
 import { NavigationContainer } from '@react-navigation/native';
 import { Home } from '../screens/Home/Home';
 import { DetailScreen } from '../screens/Detail/Detail';
